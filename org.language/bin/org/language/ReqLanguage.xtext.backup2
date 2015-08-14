@@ -1,0 +1,192 @@
+grammar org.language.ReqLanguage with org.eclipse.xtext.common.Terminals
+
+generate reqLanguage "http://www.language.org/ReqLanguage"
+
+
+Model:
+	(requirements+=Requirement)*;
+	
+Requirement:
+	reqID = ReqID ((prefix = Prefix)? mainRequirement = (MainFunction | MainStateTransition | MainComposition | MainInterface) (suffix = Suffix)?) "."
+;
+
+ReqID:
+	reqID = "ID:" name = ID
+;
+
+Prefix:
+	prefixLeftOperand = (PrefixCondition | PrefixState | PrefixEvent) prefixList += PrefixRightSide*
+;
+
+PrefixRightSide:
+	(operator = ("and" | "or") prefixRightOperand = (PrefixCondition | PrefixState | PrefixEvent))
+;
+	
+PrefixCondition:
+	prefixFixedSyntax = PrefixFixedSyntax conditionExpression = ConditionExpression
+;
+
+PrefixState:
+	prefixFixedSyntax = PrefixFixedSyntax stateExpression = (State | ParameterState)
+;
+
+PrefixEvent:
+	prefixFixedSyntax = PrefixFixedSyntax event_expression = EventExpression
+;
+
+PrefixFixedSyntax:
+	("While" | "If" |  ("As" "soon" "as") | "while" | "if" | "as" "soon" "as")
+;
+
+ConditionExpression:
+	parameter = (Time | Parameter) ("is" | "has") ("not")? (operator = Operator)? value = (NumericValue | IDValue) (time = TimingConstraint)?
+;
+
+ParameterState:
+	parameter = Parameter parameter_value = IDValue
+;
+
+EventExpression:
+	event_kind = (ParamEvent | ActorEvent | StateEvent) (time=TimingConstraint)?
+;
+
+Transition:
+	"go" ("from" source_state = (State | ParameterState))? "to" target_state = (State | ParameterState)
+;
+
+OutTransition:
+	"leave" source_state = (State | ParameterState)
+;
+
+NoTransition:
+	"remain" "in" state = (State | ParameterState)
+;
+
+MainFunction:
+	("The" | "the") actor = (System | User) "shall" ("not")? ("be" "able" "to")? function = Action
+;
+
+MainStateTransition:
+	("The" | "the") system = System "shall" transition=(Transition | OutTransition | NoTransition) ("and" function = Action)?
+;
+
+MainComposition:
+	("The" | "the") superSystem = System "shall" "consist" "of" "the" "subsystems:" subsystemList += System ("," subsystemList += System)*
+;
+
+MainInterface:
+	("The" | "the") system = System "shall" "process" "the" io=("input" | "output")? " parameters" parameterList += Parameter ("," parameterList += Parameter)*
+;
+
+Suffix:
+	suffix_kind = (SignalSuffix | TimingSuffix | EventSuffix) (operator+=("and" | "or")? suffix_kind_list+=(SignalSuffix | TimingSuffix | EventSuffix))*
+;
+
+SuffixFixedSyntax:
+	("dependent" "on" | "for")
+;
+
+SignalSuffix:
+	parameter = Parameter signal_values = (ValueLimitation | ValueReplacement | ValueRange | ValueAssignment)
+;
+
+ValueAssignment:
+	value = (NumericValue | IDValue)
+;
+
+ValueReplacement:
+	"from" value1 = (NumericValue | IDValue)? ("with" | "to") value2 = (NumericValue | IDValue)
+;
+
+ValueLimitation:
+	operator = Operator value = NumericValue
+;
+	
+EventSuffix:
+	eventTime = ("after" | "before" | "until") event = (ParamEvent | ActorEvent | StateEvent)
+;
+
+ValueRange:
+	range = ("between" | "outside") value1 = NumericValue "and" value2 = NumericValue
+;
+
+OtherSuffix:
+	sfs = SuffixFixedSyntax (action = Action)? parameter = Parameter
+;
+
+TimingSuffix:
+	timingSuffix = (TimingConstraint | TimingRange)
+;
+
+TimingConstraint:
+	timingConstraint = ("within" | "every" | "for") minmax = ("less than" | "at least")? time = Time
+;
+
+TimingRange:
+	timingValues = ("between" | "outside") time1 = Time "and" time2 = Time
+;
+
+// Why is it unpossible to use a whitespace betwixt name and parameter?
+Action:
+	"action:" name = ID ((parameter = Parameter) ("," value = NumericValue)?)?
+;
+
+Operator:
+	operator = ("less than" | "equal to" | "greater than" | "not equal to" | "greater than or equal to" | "less than or equal to")
+;
+
+State:
+	"state:" name = ID
+;
+
+ParamEvent:
+	parameter = (Time | Parameter) action = ("increases_above" | "decreases_below" | "reaches") value = NumericValue
+;
+
+ActorEvent:
+	actor = (System | User) action = ("activates" | "deactivates") entity = (Parameter | entity)
+;
+	
+StateEvent:
+	system = System "starts" state = State
+;
+
+System:
+	"system:" name = ID
+;
+
+User:
+	"user:" name = "user"
+;
+
+Parameter:
+	"parameter:" name = ID
+;
+
+Time:
+	"time:" name = INT (timeUnit = ("s" | "m" | "h"))?
+;
+
+NumericValue:
+	numValue = (VarValue | ConstantValue) (unit = Unit)?
+;
+
+IDValue:
+	"value:" name = ID
+;
+
+entity:
+	"entity:" name = ID
+;
+
+VarValue:
+	"var_value:" name = ID
+;
+
+ConstantValue:
+	"constant_value:" name = ID
+;
+
+Unit:
+	"unit:" name = ID
+;

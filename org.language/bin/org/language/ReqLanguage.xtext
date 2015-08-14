@@ -1,0 +1,140 @@
+grammar org.language.ReqLanguage with org.eclipse.xtext.common.Terminals
+
+generate reqLanguage "http://www.language.org/ReqLanguage"
+
+
+Model:
+	(requirements += Requirement)*;
+	
+Requirement:
+	reqID = ReqID (prefix = Prefix)? mainRequirement = (MainFunction | MainComposition | MainStateTransition  | MainAttributes | MainFunctions) "."
+;
+
+ReqID:
+	reqID = "ID:" name = STRING
+;
+
+// Prefixes
+Prefix:
+	leftOperand = (PrefixCondition | PrefixState | PrefixEvent) prefixList += PrefixRightOperand*
+;
+
+PrefixRightOperand:
+	operator = ("and" | "or") prefixRightOperand = (PrefixCondition | PrefixState | PrefixEvent)
+;
+
+PrefixState:
+	prefixFixedSyntax = PrefixFixedSyntax stateExpression = (State | ParameterState)
+;
+
+PrefixCondition:
+	prefixFixedSyntax = PrefixFixedSyntax parameter = (Time | Parameter) ("is" | "has") (operator = Operator)? (value = Value | time = TimingConstraint)?
+;
+
+PrefixEvent:
+	prefixFixedSyntax = PrefixFixedSyntax event_expression = (ParamEvent | ActorEvent | StateEvent)
+;
+
+PrefixFixedSyntax:
+	("While" | "If" |  "As" "soon" "as" | "while" | "if" | "as" "soon" "as")
+;
+
+// Events
+ParamEvent:
+	parameter = (Time | Parameter) action = ("increases above" | "decreases below" | "reaches") value = Value
+;
+
+ActorEvent:
+	actor = (System | User) action = ("activates" | "deactivates") entity = Parameter
+;
+	
+StateEvent:
+	system = System ("starts" "in")? state = State
+;
+
+ParameterState:
+	parameter = Parameter "is"? (parameter_value = (Value | State))?
+;
+
+
+// Mains
+MainFunction:
+	("The" | "the") system = (System | Actor) "shall" ("not")? ("be" "able" "to")? function = Action
+;
+
+MainComposition:
+	("The" | "the") system = System "shall" "consist" "of" "the" "subsystems" subsystemList += System ("," subsystemList += System)*
+;
+
+MainStateTransition:
+	("The" | "the") system = System "shall" transition=(Transition | OutTransition | NoTransition) ("and" function = Action)?
+;
+
+MainAttributes:
+	("The" | "the") system = System "shall" "have" "the" "attributes" attributeList += Attribute ("," attributeList += Attribute)*
+;
+
+MainFunctions:
+	("The" | "the") system = System "shall" "have" "the" "functions" functionList += Function ("," functionList += Function)*
+;
+
+Operator:
+	operator = ("less_than" | "equal_to" | "greater_than" | "not_equal_to" | "greater_than_or_equal_to" | "less_than_or_equal_to")
+;
+
+// Transitions
+Transition:
+	"go" ("from" source_state = (State | ParameterState))? "to" target_state = (State | ParameterState)
+;
+
+OutTransition:
+	"leave" source_state = (State | ParameterState)
+;
+
+NoTransition:
+	"remain_in" state = (State | ParameterState)
+;
+
+System:
+	system = "system:" name = ID
+;
+
+Actor:
+	actor = "actor:" name = ID
+;
+
+User:
+	user = "user:" name = ID
+;
+
+Action:
+	action = "action:" name = ID (parameter = Parameter (value = Value)?)? ("to" | "from" | "the" | "on")? subject = (System | Actor | Parameter)
+;
+
+State:
+	state = "state:" name = ID
+;
+
+Attribute:
+	attribute = "attribute:" name = ID "type:" type = ID
+;
+
+Function:
+	function = "function:" name = ID "type:" type = ID
+;
+
+Parameter:
+	parameter = "parameter:" name = ID
+;
+
+Value:
+	val = "value:" value = INT
+;
+
+Time:
+	"time:" value = INT (timeUnit = ("s" | "m" | "h"))?
+;
+
+TimingConstraint:
+	timingConstraint = ("within" | "every" | "for") minmax = ("less than" | "at least")? time = Time
+;

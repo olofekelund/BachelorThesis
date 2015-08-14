@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.ui.newWizards">
+      <!-- @generated ReqLanguage -->
+      <category
+            id="org.eclipse.emf.ecore.Wizard.category.ID"
+            name="%_UI_Wizard_category"/>
+      <wizard
+            id="org.language.reqLanguage.presentation.ReqLanguageModelWizardID"
+            name="%_UI_ReqLanguageModelWizard_label"
+            class="org.language.reqLanguage.presentation.ReqLanguageModelWizard"
+            category="org.eclipse.emf.ecore.Wizard.category.ID"
+            icon="icons/full/obj16/ReqLanguageModelFile.gif">
+         <description>%_UI_ReqLanguageModelWizard_description</description>
+         <selection class="org.eclipse.core.resources.IResource"/>
+      </wizard>
+   </extension>
+
+   <extension point="org.eclipse.ui.editors">
+      <!-- @generated ReqLanguage -->
+      <editor
+            id="org.language.reqLanguage.presentation.ReqLanguageEditorID"
+            name="%_UI_ReqLanguageEditor_label"
+            icon="icons/full/obj16/ReqLanguageModelFile.gif"
+            extensions="reql"
+            class="org.language.reqLanguage.presentation.ReqLanguageEditor"
+            contributorClass="org.language.reqLanguage.presentation.ReqLanguageActionBarContributor">
+      </editor>
+   </extension>
+
+</plugin>
